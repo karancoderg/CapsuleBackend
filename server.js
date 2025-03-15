@@ -1,19 +1,26 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config(); // Loads .env file
+require("dotenv").config(); // Load environment variables from .env
 
 const app = express();
 
 // Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
-const capsuleRoutes = require("./routes/capsuleRoutes");
-app.use("/api/capsules", capsuleRoutes);
-// Routes
-const authRoutes = require("./routes/authRoutes");
-app.use("/api/auth", authRoutes);
+
+// Serve static files from the uploads folder
 app.use("/uploads", express.static("uploads"));
+
+// Routes
+const capsuleRoutes = require("./routes/capsuleRoutes");
+const authRoutes = require("./routes/authRoutes");
+
+app.use("/api/capsules", capsuleRoutes);
+app.use("/api/auth", authRoutes);
+
+// Import the capsule unlock job (scheduled tasks)
 require("./jobs/capsuleUnlockJob");
 
 // Connect to MongoDB
@@ -22,8 +29,8 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.error("Database Connection Error:", err));
 
+// Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log('Server running on port 5000');
+  console.log(`Server running on port ${PORT}`);
 });
-
